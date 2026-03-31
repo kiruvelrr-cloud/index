@@ -1,552 +1,940 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>Vending Payment</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <title>UniSkill | Teach & Learn</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --red: #ff1f3d;
-      --green: #00c97b;
-      --bg: #080810;
-      --card: #10101a;
-      --card2: #16161f;
-      --border: rgba(255,255,255,0.07);
-      --muted: #55556a;
+      --primary: #00d4ff;
+      --primary-hover: #00b8e0;
+      --secondary: #a855f7;
+      --bg: #030014;
+      --card-bg: rgba(255, 255, 255, 0.04);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --input-bg: rgba(255, 255, 255, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
     }
 
     body {
       background: var(--bg);
-      font-family: 'Inter', sans-serif;
-      color: #f0f0f5;
+      color: var(--text);
       min-height: 100vh;
       display: flex;
-      flex-direction: column;
+      justify-content: center;
       align-items: center;
-      justify-content: flex-start;
-      padding: 0 0 60px;
+      overflow: hidden;
       position: relative;
-      overflow-x: hidden;
+    }
+
+    /* ENHANCED ANIMATED BACKGROUND */
+    .bg-blobs {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      z-index: 0;
+      pointer-events: none;
     }
 
     .blob {
-      position: fixed; border-radius: 50%;
-      filter: blur(80px); pointer-events: none; z-index: 0;
-    }
-    .blob-red   { width:380px;height:380px;top:-120px;left:-100px;background:rgba(255,31,61,0.15); }
-    .blob-blue  { width:300px;height:300px;bottom:-80px;right:-80px;background:rgba(99,102,241,0.13); }
-    .blob-green { width:260px;height:260px;bottom:100px;left:-60px;background:rgba(0,201,123,0.08);opacity:0;transition:opacity 1s; }
-
-    .machine { position:relative;z-index:1;width:100%;max-width:400px;margin:0 auto; }
-
-    /* Top bezel */
-    .bezel-top {
-      background:linear-gradient(180deg,#1c1c2e 0%,#12121c 100%);
-      border:1px solid rgba(255,255,255,0.06);border-bottom:none;
-      border-radius:28px 28px 0 0;padding:18px 20px 12px;
-      display:flex;align-items:center;justify-content:space-between;
-    }
-    .machine-brand { font-size:10px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--muted); }
-    .machine-lights { display:flex;gap:6px; }
-    .light { width:8px;height:8px;border-radius:50%; }
-    .light.red   { background:#ff1f3d;box-shadow:0 0 6px #ff1f3d;animation:blink 2.4s infinite; }
-    .light.amber { background:#f59e0b;box-shadow:0 0 6px #f59e0b;animation:blink 2.4s 0.8s infinite; }
-    .light.green { background:#00c97b;box-shadow:0 0 6px #00c97b;animation:blink 2.4s 1.6s infinite; }
-    @keyframes blink { 0%,100%{opacity:1}50%{opacity:0.3} }
-
-    /* Screen */
-    .screen {
-      background:#080812;
-      border-left:1px solid rgba(255,255,255,0.06);
-      border-right:1px solid rgba(255,255,255,0.06);
-      padding:0 20px 20px;position:relative;overflow:hidden;
-    }
-    .screen::after {
-      content:'';position:absolute;inset:0;
-      background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.04) 3px,rgba(0,0,0,0.04) 4px);
-      pointer-events:none;z-index:10;
+      position: absolute;
+      filter: blur(100px);
+      border-radius: 50%;
+      animation: floatBlob 18s infinite alternate ease-in-out;
+      opacity: 0.18;
     }
 
-    /* Product display */
-    .product-display {
-      background:linear-gradient(160deg,#0e0e1e 0%,#080812 100%);
-      border:1px solid rgba(255,255,255,0.05);border-radius:20px;
-      padding:28px 20px 24px;text-align:center;margin-bottom:16px;
-      position:relative;overflow:hidden;
-    }
-    .product-display::before {
-      content:'';position:absolute;top:-40px;left:50%;transform:translateX(-50%);
-      width:200px;height:200px;
-      background:radial-gradient(circle,rgba(255,31,61,0.2) 0%,transparent 70%);
+    .blob-1 {
+      top: -25%;
+      left: -25%;
+      width: 65vw;
+      height: 65vw;
+      background: rgba(0, 212, 255, 0.35);
+      animation-duration: 22s;
     }
 
-    .track { display:flex;align-items:center;justify-content:center;margin-bottom:20px;position:relative;height:90px;overflow:hidden; }
-    .track-rail { position:absolute;bottom:0;left:10%;right:10%;height:4px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent);border-radius:2px; }
-    .track-item {
-      font-size:64px;line-height:1;
-      filter:drop-shadow(0 8px 24px rgba(0,0,0,0.6));
-      position:relative;z-index:2;
-      animation:float 3s ease-in-out infinite;
-    }
-    @keyframes float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)} }
-    .track-item.drop { animation:dropItem 0.7s cubic-bezier(0.34,1.2,0.64,1) forwards; }
-    @keyframes dropItem {
-      0%  {transform:translateY(-60px) scale(1.1);opacity:0}
-      60% {transform:translateY(10px) scale(0.95);opacity:1}
-      80% {transform:translateY(-4px) scale(1.02)}
-      100%{transform:translateY(0) scale(1);opacity:1}
+    .blob-2 {
+      bottom: -30%;
+      right: -20%;
+      width: 55vw;
+      height: 55vw;
+      background: rgba(168, 85, 247, 0.3);
+      animation-delay: -9s;
     }
 
-    .item-name  { font-size:22px;font-weight:900;letter-spacing:-0.5px;color:#fff;margin-bottom:4px;position:relative;z-index:2; }
-    .item-desc  { font-size:11px;color:var(--muted);letter-spacing:0.5px;position:relative;z-index:2;margin-bottom:18px; }
-    .price-row  { display:flex;align-items:center;justify-content:center;gap:8px; }
-    .price-badge {
-      display:inline-flex;align-items:baseline;gap:5px;
-      background:rgba(255,31,61,0.12);border:1px solid rgba(255,31,61,0.28);
-      border-radius:100px;padding:10px 22px;position:relative;z-index:2;
-    }
-    .price-num { font-size:34px;font-weight:900;color:#fff;letter-spacing:-1px; }
-    .price-etb { font-size:13px;font-weight:800;color:var(--red);letter-spacing:1px; }
-
-    /* Slot */
-    .slot-window {
-      background:#060609;border:1px solid rgba(255,255,255,0.05);
-      border-radius:12px;height:54px;display:flex;align-items:center;
-      justify-content:center;margin-bottom:16px;position:relative;overflow:hidden;
-    }
-    .slot-inner { display:flex;gap:10px;align-items:center;justify-content:center; }
-    .slot-text  { font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:600; }
-    .slot-dot   { width:5px;height:5px;background:var(--muted);border-radius:50%;animation:dotPulse 1.4s infinite; }
-    .slot-dot:nth-child(2){animation-delay:0.2s}
-    .slot-dot:nth-child(3){animation-delay:0.4s}
-    @keyframes dotPulse { 0%,80%,100%{opacity:0.3}40%{opacity:1} }
-
-    /* Payment panel */
-    .payment-panel { background:var(--card2);border:1px solid var(--border);border-radius:18px;padding:18px;margin-bottom:16px; }
-    .panel-label   { font-size:9px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:12px; }
-    .methods { display:flex;flex-direction:column;gap:8px; }
-
-    .pay-btn {
-      position:relative;display:flex;align-items:center;gap:12px;
-      background:rgba(255,255,255,0.03);border:1.5px solid rgba(255,255,255,0.07);
-      border-radius:14px;padding:14px 16px;cursor:pointer;
-      transition:all 0.3s cubic-bezier(0.34,1.4,0.64,1);
-      text-align:left;width:100%;overflow:hidden;outline:none;
-      -webkit-tap-highlight-color:transparent;
-    }
-    .pay-btn:active{transform:scale(0.97)}
-    .btn-glow { position:absolute;inset:0;opacity:0;transition:opacity 0.4s;border-radius:inherit; }
-    .pay-btn[data-method="telebirr"] .btn-glow { background:radial-gradient(ellipse at 30% 50%,rgba(124,58,237,0.2),transparent 70%); }
-    .pay-btn[data-method="cbe"]      .btn-glow { background:radial-gradient(ellipse at 30% 50%,rgba(14,165,233,0.2),transparent 70%); }
-    .pay-btn.selected .btn-glow { opacity:1; }
-
-    .btn-icon {
-      width:42px;height:42px;border-radius:11px;
-      display:flex;align-items:center;justify-content:center;
-      font-size:20px;flex-shrink:0;transition:all 0.3s;position:relative;z-index:1;
-    }
-    .pay-btn[data-method="telebirr"] .btn-icon { background:rgba(124,58,237,0.12); }
-    .pay-btn[data-method="cbe"]      .btn-icon { background:rgba(14,165,233,0.12); }
-    .pay-btn[data-method="telebirr"].selected .btn-icon { background:rgba(124,58,237,0.25);box-shadow:0 0 16px rgba(124,58,237,0.3); }
-    .pay-btn[data-method="cbe"].selected      .btn-icon { background:rgba(14,165,233,0.25);box-shadow:0 0 16px rgba(14,165,233,0.3); }
-
-    .btn-info { flex:1;position:relative;z-index:1; }
-    .btn-name { font-size:14px;font-weight:700;color:#c0c0d0;transition:color 0.3s; }
-    .btn-sub  { font-size:10px;color:var(--muted);margin-top:2px; }
-    .pay-btn[data-method="telebirr"].selected .btn-name { color:#c4b5fd; }
-    .pay-btn[data-method="cbe"].selected      .btn-name { color:#7dd3fc; }
-    .pay-btn[data-method="telebirr"].selected { border-color:rgba(124,58,237,0.45);box-shadow:0 0 0 1px rgba(124,58,237,0.2),0 6px 20px rgba(124,58,237,0.12); }
-    .pay-btn[data-method="cbe"].selected      { border-color:rgba(14,165,233,0.45);box-shadow:0 0 0 1px rgba(14,165,233,0.2),0 6px 20px rgba(14,165,233,0.12); }
-
-    .check-ring {
-      width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,0.1);
-      display:flex;align-items:center;justify-content:center;
-      transition:all 0.3s;flex-shrink:0;position:relative;z-index:1;
-    }
-    .check-ring svg { opacity:0;transform:scale(0.7);transition:all 0.3s; }
-    .pay-btn[data-method="telebirr"].selected .check-ring { background:#7c3aed;border-color:#7c3aed; }
-    .pay-btn[data-method="cbe"].selected      .check-ring { background:#0ea5e9;border-color:#0ea5e9; }
-    .pay-btn.selected .check-ring svg { opacity:1;transform:scale(1); }
-
-    /* CTA */
-    .cta-wrap { padding:0 0 4px; }
-    .cta-btn {
-      width:100%;padding:17px;border:none;border-radius:16px;
-      font-size:15px;font-weight:800;cursor:pointer;
-      transition:all 0.3s cubic-bezier(0.34,1.4,0.64,1);
-      background:linear-gradient(135deg,#ff1f3d,#c0001b);color:#fff;
-      box-shadow:0 8px 24px rgba(255,31,61,0.3);
-      outline:none;-webkit-tap-highlight-color:transparent;
-      display:flex;align-items:center;justify-content:center;gap:8px;
-      position:relative;overflow:hidden;letter-spacing:0.2px;
-    }
-    .cta-btn::before { content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.15),transparent);opacity:0;transition:opacity 0.3s; }
-    .cta-btn:hover::before { opacity:1; }
-    .cta-btn:hover { transform:translateY(-2px);box-shadow:0 14px 32px rgba(255,31,61,0.4); }
-    .cta-btn:active { transform:scale(0.97); }
-    .cta-btn:disabled { background:#1c1c28;color:#3a3a4a;box-shadow:none;cursor:not-allowed;transform:none; }
-    .cta-btn:not(:disabled)::after {
-      content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;
-      background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);
-      animation:shimmer 2.5s infinite;
-    }
-    @keyframes shimmer { to{left:160%} }
-
-    /* Bottom bezel */
-    .bezel-bottom {
-      background:linear-gradient(0deg,#1c1c2e 0%,#12121c 100%);
-      border:1px solid rgba(255,255,255,0.06);border-top:none;
-      border-radius:0 0 28px 28px;padding:14px 20px 20px;
-      display:flex;align-items:center;justify-content:center;gap:8px;
-    }
-    .secure-badge { display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted);font-weight:600; }
-    .secure-dot   { width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green); }
-
-    /* Ticker */
-    .ticker { margin-top:8px;background:#060609;border:1px solid var(--border);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:8px;overflow:hidden; }
-    .ticker-dot  { width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);flex-shrink:0; }
-    .ticker-text { font-size:10px;font-weight:600;color:var(--muted);letter-spacing:1px;white-space:nowrap;overflow:hidden;animation:tickerScroll 14s linear infinite; }
-    @keyframes tickerScroll { 0%{transform:translateX(100%)}100%{transform:translateX(-400%)} }
-
-    /* ── DISPENSE OVERLAY ── */
-    .dispense-overlay {
-      position:fixed;inset:0;z-index:200;display:none;
-      flex-direction:column;align-items:center;justify-content:center;
-      background:rgba(4,4,10,0.97);backdrop-filter:blur(20px);
-    }
-    .dispense-overlay.show { display:flex; }
-
-    .vend-machine-anim { position:relative;width:220px;margin-bottom:32px; }
-    .vm-body {
-      background:linear-gradient(160deg,#1a1a2e,#0f0f1a);
-      border:2px solid rgba(255,255,255,0.08);border-radius:20px;
-      width:180px;height:240px;margin:0 auto;position:relative;
-      box-shadow:0 20px 60px rgba(0,0,0,0.8),inset 0 1px 0 rgba(255,255,255,0.05);
-      overflow:hidden;
-    }
-    .vm-screen {
-      background:#060610;border:1px solid rgba(255,255,255,0.06);border-radius:10px;
-      margin:14px 14px 8px;height:90px;
-      display:flex;flex-direction:column;align-items:center;justify-content:center;
-      position:relative;overflow:hidden;
-    }
-    .vm-screen::after { content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.05) 2px,rgba(0,0,0,0.05) 3px); }
-    .vm-screen-text  { font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--green);text-shadow:0 0 10px var(--green);z-index:1; }
-    .vm-screen-price { font-size:20px;font-weight:900;color:#fff;z-index:1;margin-top:4px; }
-
-    .vm-rows { padding:0 14px;display:flex;flex-direction:column;gap:6px; }
-    .vm-row  { display:flex;gap:6px; }
-    .vm-cell {
-      flex:1;height:24px;background:rgba(255,255,255,0.04);
-      border:1px solid rgba(255,255,255,0.06);border-radius:6px;
-      display:flex;align-items:center;justify-content:center;font-size:12px;transition:all 0.3s;
-    }
-    .vm-cell.active { background:rgba(255,31,61,0.2);border-color:rgba(255,31,61,0.4);box-shadow:0 0 8px rgba(255,31,61,0.3); }
-    .vm-slot { background:#000;border:1px solid rgba(255,255,255,0.04);border-radius:6px;margin:8px 14px 0;height:16px;position:relative;overflow:hidden; }
-
-    .falling-item {
-      position:absolute;top:-80px;left:50%;transform:translateX(-50%);
-      font-size:40px;z-index:10;filter:drop-shadow(0 0 20px rgba(255,255,255,0.3));
-    }
-    .falling-item.fall { animation:fall 1.2s cubic-bezier(0.25,0.46,0.45,0.94) forwards; }
-    @keyframes fall {
-      0%  {top:-60px;transform:translateX(-50%) rotate(0deg)}
-      70% {top:200px;transform:translateX(-50%) rotate(15deg);opacity:1}
-      85% {top:190px;transform:translateX(-50%) rotate(-5deg);opacity:1}
-      100%{top:220px;transform:translateX(-50%) rotate(0deg);opacity:0}
+    .blob-3 {
+      top: 15%;
+      right: -15%;
+      width: 38vw;
+      height: 38vw;
+      background: rgba(236, 72, 153, 0.22);
+      animation-duration: 14s;
+      animation-delay: -4s;
     }
 
-    .progress-wrap { width:240px;margin-bottom:20px; }
-    .progress-label { font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;text-align:center; }
-    .progress-bar-bg   { height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden; }
-    .progress-bar-fill { height:100%;width:0%;background:linear-gradient(90deg,var(--red),#ff6b35);border-radius:2px;transition:width 2.5s linear;box-shadow:0 0 8px rgba(255,31,61,0.5); }
+    .blob-4 {
+      bottom: 10%;
+      left: 10%;
+      width: 45vw;
+      height: 45vw;
+      background: rgba(0, 212, 255, 0.2);
+      animation-duration: 26s;
+      animation-delay: -12s;
+    }
 
-    .dispense-status { font-size:18px;font-weight:800;color:#fff;margin-bottom:6px;text-align:center; }
-    .dispense-sub    { font-size:12px;color:var(--muted);text-align:center; }
+    .blob-5 {
+      top: 40%;
+      left: 50%;
+      width: 30vw;
+      height: 30vw;
+      background: rgba(168, 85, 247, 0.25);
+      animation-duration: 16s;
+    }
 
-    /* ── SUCCESS ── */
-    .success-overlay {
-      position:fixed;inset:0;z-index:300;display:none;
-      flex-direction:column;align-items:center;justify-content:center;
-      background:rgba(4,4,10,0.97);backdrop-filter:blur(20px);padding:24px;
+    @keyframes floatBlob {
+      0% {
+        transform: translate(0, 0) scale(1) rotate(0deg);
+      }
+
+      100% {
+        transform: translate(80px, 60px) scale(1.18) rotate(12deg);
+      }
     }
-    .success-overlay.show { display:flex; }
-    .success-card {
-      background:var(--card);border:1px solid rgba(0,201,123,0.2);border-radius:28px;
-      padding:40px 28px 32px;text-align:center;max-width:320px;width:100%;
-      box-shadow:0 0 80px rgba(0,201,123,0.15);
-      animation:popIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
+
+    /* Subtle floating particles */
+    .particle {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: #00d4ff;
+      border-radius: 50%;
+      box-shadow: 0 0 12px #00d4ff;
+      animation: particleFloat 8s linear infinite;
+      z-index: 1;
+      opacity: 0;
     }
-    @keyframes popIn { from{transform:scale(0.7) translateY(40px);opacity:0}to{transform:scale(1) translateY(0);opacity:1} }
-    .success-ring {
-      width:80px;height:80px;border-radius:50%;background:rgba(0,201,123,0.12);
-      border:2px solid rgba(0,201,123,0.3);display:flex;align-items:center;justify-content:center;
-      margin:0 auto 20px;font-size:36px;
-      animation:successPop 0.6s 0.2s cubic-bezier(0.34,1.56,0.64,1) both;
+
+    @keyframes particleFloat {
+      0% {
+        transform: translateY(100vh) scale(0.2);
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 1;
+      }
+
+      90% {
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateY(-100vh) scale(1);
+        opacity: 0;
+      }
     }
-    @keyframes successPop { from{transform:scale(0)}to{transform:scale(1)} }
-    .success-title  { font-size:22px;font-weight:900;color:var(--green);margin-bottom:8px;letter-spacing:-0.5px; }
-    .success-detail { background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:16px;padding:16px;margin:16px 0;display:flex;flex-direction:column;gap:10px; }
-    .detail-row     { display:flex;justify-content:space-between;align-items:center; }
-    .detail-label   { font-size:11px;color:var(--muted);font-weight:600; }
-    .detail-val     { font-size:13px;color:#e0e0f0;font-weight:700; }
-    .detail-val.green { color:var(--green); }
-    .success-close  {
-      width:100%;padding:15px;border-radius:14px;border:none;
-      background:rgba(0,201,123,0.12);border:1px solid rgba(0,201,123,0.25);
-      color:var(--green);font-size:14px;font-weight:800;cursor:pointer;
-      letter-spacing:0.5px;transition:all 0.2s;
+
+    .container {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 460px;
+      padding: 16px;
+      margin: auto;
     }
-    .success-close:hover { background:rgba(0,201,123,0.2); }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(32px);
+      -webkit-backdrop-filter: blur(32px);
+      border: 1px solid var(--card-border);
+      border-radius: 28px;
+      padding: 36px 28px;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.45),
+        0 0 60px rgba(0, 212, 255, 0.15);
+      position: relative;
+      overflow: hidden;
+      animation: cardPulse 8s ease infinite;
+    }
+
+    @keyframes cardPulse {
+
+      0%,
+      100% {
+        box-shadow: 0 25px 70px rgba(0, 0, 0, 0.45), 0 0 60px rgba(0, 212, 255, 0.15);
+      }
+
+      50% {
+        box-shadow: 0 25px 70px rgba(0, 0, 0, 0.45), 0 0 80px rgba(168, 85, 247, 0.25);
+      }
+    }
+
+    .step-container {
+      display: none;
+      animation: fadeInScale 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .step-container.active {
+      display: block;
+    }
+
+    @keyframes fadeInScale {
+      from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.96);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    h1 {
+      font-size: 27px;
+      font-weight: 800;
+      letter-spacing: -0.7px;
+      background: linear-gradient(135deg, #fff, #00d4ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    p {
+      font-size: 14.2px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+
+    /* Rest of the styles remain the same as previous clean version */
+    .input-group {
+      margin-bottom: 20px;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 12.8px;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 7px;
+      letter-spacing: 0.4px;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 14px 18px;
+      border-radius: 16px;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      color: #fff;
+      font-size: 15.5px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      outline: none;
+    }
+
+    .input-field:focus {
+      border-color: var(--primary);
+      background: rgba(0, 212, 255, 0.08);
+      box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.25);
+    }
+
+    .input-icon-wrap {
+      position: relative;
+    }
+
+    .input-icon-wrap .input-field {
+      padding-left: 46px;
+    }
+
+    .input-icon-wrap .icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+      color: var(--text-muted);
+    }
+
+    .skills-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-bottom: 20px;
+      max-height: 270px;
+      overflow-y: auto;
+      padding-right: 6px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0, 212, 255, 0.3) transparent;
+    }
+
+    .skill-pill {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 11px 19px;
+      border-radius: 9999px;
+      font-size: 13.8px;
+      font-weight: 600;
+      color: #e0f2fe;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .skill-pill:hover {
+      background: rgba(0, 212, 255, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .skill-pill.active {
+      background: linear-gradient(90deg, #00d4ff, #a855f7);
+      color: #030014;
+      box-shadow: 0 6px 18px rgba(0, 212, 255, 0.35);
+      animation: pillPop 0.35s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    @keyframes pillPop {
+      0% {
+        transform: scale(0.75);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .skill-pill.disabled {
+      opacity: 0.35;
+      pointer-events: none;
+      background: rgba(255, 255, 255, 0.04);
+      text-decoration: line-through;
+    }
+
+    .selected-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+      min-height: 48px;
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .selected-pill {
+      background: #00d4ff;
+      color: #030014;
+      padding: 5px 16px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      animation: badgePop 0.3s ease;
+    }
+
+    @keyframes badgePop {
+      0% {
+        transform: scale(0.6);
+        opacity: 0;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 18px;
+      border: none;
+      background: linear-gradient(135deg, #00d4ff, #a855f7);
+      color: #030014;
+      font-size: 16.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(0, 212, 255, 0.45);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      margin-top: 10px;
+    }
+
+    .progress-dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 28px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .dot.active {
+      background: var(--primary);
+      width: 26px;
+      border-radius: 9999px;
+    }
+
+    .success-circle {
+      width: 92px;
+      height: 92px;
+      border-radius: 50%;
+      margin: 0 auto 16px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 5px solid #10b981;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 42px;
+      animation: popIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    @keyframes popIn {
+      0% {
+        transform: scale(0) rotate(-180deg);
+      }
+
+      100% {
+        transform: scale(1) rotate(0);
+      }
+    }
+
+    .connecting {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      margin: 20px auto 24px;
+    }
+
+    .orb {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      position: absolute;
+      top: 31px;
+    }
+
+    .orb-1 {
+      left: 8px;
+      background: #00d4ff;
+      animation: orbit1 1.7s infinite ease-in-out;
+    }
+
+    .orb-2 {
+      right: 8px;
+      background: #a855f7;
+      animation: orbit2 1.7s infinite ease-in-out;
+    }
+
+    @keyframes orbit1 {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      50% {
+        transform: translateX(58px);
+      }
+    }
+
+    @keyframes orbit2 {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      50% {
+        transform: translateX(-58px);
+      }
+    }
+
+    .branding {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .logo-icon {
+      font-size: 40px;
+      margin-bottom: 8px;
+      display: inline-block;
+      animation: logoFloat 3s infinite alternate ease-in-out;
+    }
+
+    @keyframes logoFloat {
+      0% {
+        transform: translateY(0);
+      }
+
+      100% {
+        transform: translateY(-12px);
+      }
+    }
   </style>
 </head>
+
 <body>
 
-  <div class="blob blob-red"></div>
-  <div class="blob blob-blue"></div>
-  <div class="blob blob-green" id="blob-green"></div>
-
-  <div class="machine">
-
-    <div class="bezel-top">
-      <span class="machine-brand">VendPay™</span>
-      <div class="machine-lights">
-        <div class="light red"></div>
-        <div class="light amber"></div>
-        <div class="light green"></div>
-      </div>
-    </div>
-
-    <div class="screen">
-
-      <div class="product-display">
-        <div class="track">
-          <div class="track-rail"></div>
-          <div class="track-item" id="item-emoji">🥤</div>
-        </div>
-        <div class="item-name" id="item-name">Coca Cola</div>
-        <div class="item-desc" id="item-desc">Cold &amp; Refreshing · 500ml</div>
-        <div class="price-row">
-          <div class="price-badge">
-            <span class="price-num" id="item-price">45</span>
-            <span class="price-etb">ETB</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="slot-window">
-        <div class="slot-inner">
-          <span class="slot-text">Awaiting Payment</span>
-          <div class="slot-dot"></div>
-          <div class="slot-dot"></div>
-          <div class="slot-dot"></div>
-        </div>
-      </div>
-
-      <div class="payment-panel">
-        <div class="panel-label">Select Payment Method</div>
-        <div class="methods">
-
-          <button class="pay-btn" data-method="telebirr" onclick="selectMethod(this)">
-            <div class="btn-glow"></div>
-            <div class="btn-icon">💜</div>
-            <div class="btn-info">
-              <div class="btn-name">Telebirr</div>
-              <div class="btn-sub">Ethio Telecom · Instant</div>
-            </div>
-            <div class="check-ring">
-              <svg width="11" height="8" viewBox="0 0 11 8" fill="none">
-                <path d="M1 3.5L4 6.5L10 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-          </button>
-
-          <button class="pay-btn" data-method="cbe" onclick="selectMethod(this)">
-            <div class="btn-glow"></div>
-            <div class="btn-icon">🏦</div>
-            <div class="btn-info">
-              <div class="btn-name">CBE Birr</div>
-              <div class="btn-sub">Commercial Bank · Instant</div>
-            </div>
-            <div class="check-ring">
-              <svg width="11" height="8" viewBox="0 0 11 8" fill="none">
-                <path d="M1 3.5L4 6.5L10 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-          </button>
-
-        </div>
-      </div>
-
-      <div class="cta-wrap">
-        <button class="cta-btn" id="pay-cta" disabled onclick="handlePay()">
-          Select a Payment Method
-        </button>
-      </div>
-
-      <div class="ticker">
-        <div class="ticker-dot"></div>
-        <div class="ticker-text">VENDPAY SECURE SYSTEM · ENCRYPTED TRANSACTION · ETHIOPIA BIRR · TELEBIRR · CBE BIRR · INSTANT PAYMENT · VENDPAY SECURE SYSTEM · ENCRYPTED</div>
-      </div>
-
-    </div>
-
-    <div class="bezel-bottom">
-      <div class="secure-badge">
-        <div class="secure-dot"></div>
-        Secured &amp; Encrypted · VendPay v2.0
-      </div>
-    </div>
-
+  <!-- Background -->
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <div class="blob blob-4"></div>
+    <div class="blob blob-5"></div>
   </div>
 
+  <!-- Floating particles container -->
+  <div id="particles" style="position:absolute; inset:0; z-index:1; pointer-events:none;"></div>
 
-  <!-- DISPENSE OVERLAY -->
-  <div class="dispense-overlay" id="dispense-overlay">
-    <div class="vend-machine-anim">
-      <div class="vm-body">
-        <div class="vm-screen">
-          <div class="vm-screen-text">Processing</div>
-          <div class="vm-screen-price" id="vm-price">45 ETB</div>
+  <div class="container">
+    <div class="card">
+
+      <!-- STEP 0 -->
+      <div class="step-container active" id="step-0">
+        <div class="branding">
+          <div class="logo-icon">🎓🔄</div>
+          <h1>UniSkill</h1>
+          <p>Choose your department.<br>Link Instagram.<br>Swap skills with fellow students.</p>
         </div>
-        <div class="vm-rows">
-          <div class="vm-row">
-            <div class="vm-cell" id="vc1">🥤</div>
-            <div class="vm-cell">🍫</div>
-            <div class="vm-cell">🍬</div>
+        <button class="btn" onclick="nextStep(1)">Get Started</button>
+      </div>
+
+      <!-- STEP 1: Profile -->
+      <div class="step-container" id="step-1">
+        <h1>Tell us about you</h1>
+        <p>Your profile is created in seconds.</p>
+
+        <div class="input-group">
+          <label>Full Name</label>
+          <input type="text" id="fullname" class="input-field" placeholder="Alex Rivera" />
+        </div>
+
+        <div class="input-group">
+          <label>Department / Major</label>
+          <select id="department" class="input-field">
+            <option value="" disabled selected>Select department...</option>
+            <option value="Marketing and Sales Management">Marketing and Sales Management</option>
+            <option value="Nursing">Nursing</option>
+            <option value="Accounting and Finance">Accounting and Finance</option>
+            <option value="Pharmacy">Pharmacy</option>
+            <option value="IT">IT</option>
+            <option value="Front Office">Front Office</option>
+            <option value="Business Administration">Business Administration</option>
+            <option value="Management">Management</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label>Instagram Username</label>
+          <div class="input-icon-wrap">
+            <span class="icon">@</span>
+            <input type="text" id="instagram" class="input-field" placeholder="alexriv.it" />
           </div>
-          <div class="vm-row">
-            <div class="vm-cell">🧃</div>
-            <div class="vm-cell">🍪</div>
-            <div class="vm-cell" id="vc2">🥤</div>
+        </div>
+
+        <div id="profile-complete"
+          class="hidden flex items-center justify-center gap-3 bg-emerald-400/10 text-emerald-400 py-4 px-5 rounded-3xl text-sm font-semibold mt-4">
+          ✅ Profile complete — Instagram groups ready!
+        </div>
+
+        <button class="btn" onclick="nextStep(2)">Continue to Skills</button>
+        <button class="btn btn-secondary" onclick="prevStep(0)">Back</button>
+      </div>
+
+      <!-- STEP 2: Learn -->
+      <div class="step-container" id="step-2">
+        <h1>What do you want to <span style="color:#a855f7">LEARN</span>?</h1>
+        <p>Tap any skill. It will move to your list.</p>
+
+        <div class="selected-summary" id="learn-selected-summary">
+          <p id="learn-empty" class="text-xs text-center text-muted w-full py-4">Selected skills appear here</p>
+        </div>
+
+        <div class="skills-grid" id="learn-skills"></div>
+
+        <button class="btn" onclick="nextStep(3)">Next: What I can teach</button>
+        <button class="btn btn-secondary" onclick="prevStep(1)">Back</button>
+      </div>
+
+      <!-- STEP 3: Teach -->
+      <div class="step-container" id="step-3">
+        <h1>What can you <span style="color:#00d4ff">TEACH</span>?</h1>
+        <p>Skills you chose to learn are hidden here.</p>
+        <div style="font-size:12px;color:#00d4ff;text-align:center;margin-bottom:12px;">No overlapping skills allowed
+        </div>
+
+        <div class="selected-summary" id="teach-selected-summary">
+          <p id="teach-empty" class="text-xs text-center text-muted w-full py-4">Selected skills appear here</p>
+        </div>
+
+        <div class="skills-grid" id="teach-skills"></div>
+
+        <button class="btn" onclick="finishForm()">Find Matches ⚡</button>
+        <button class="btn btn-secondary" onclick="prevStep(2)">Back</button>
+      </div>
+
+      <!-- STEP 4: Loading -->
+      <div class="step-container" id="step-loading">
+        <div class="connecting">
+          <div class="orb orb-1"></div>
+          <div class="orb orb-2"></div>
+        </div>
+        <h1 style="text-align:center; font-size:25px;">Finding matches...</h1>
+        <p style="text-align:center;">Creating your private Instagram groups now</p>
+      </div>
+
+      <!-- STEP 5: CONGRATULATIONS SUCCESS -->
+      <div class="step-container" id="step-success">
+        <div style="text-align:center; position:relative;">
+          <div class="success-circle" id="congrats-icon">🎉</div>
+
+          <h1 style="font-size:32px; margin-bottom:8px;">Congratulations!</h1>
+          <p style="font-size:18px; color:#10b981; margin-bottom:16px;">Thank you for registering with UniSkill</p>
+
+          <p style="max-width:280px; margin:0 auto 28px; line-height:1.4;">
+            We will contact you on Instagram shortly with your skill groups and matches.
+          </p>
+
+          <!-- Animated success details -->
+          <div
+            style="background:rgba(255,255,255,0.05); border:1px solid rgba(0,212,255,0.2); padding:20px; border-radius:20px; text-align:left; margin-bottom:24px;">
+            <div style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">YOUR PROFILE</div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-weight:600;">
+              <span id="summary-name"></span>
+              <span style="color:#00d4ff;">@<span id="summary-ig"></span></span>
+            </div>
+            <div id="summary-dept" style="font-size:13px; color:#cbd5e1;"></div>
           </div>
-        </div>
-        <div class="vm-slot"></div>
-      </div>
-      <div class="falling-item" id="falling-item">🥤</div>
-    </div>
 
-    <div class="progress-wrap">
-      <div class="progress-label" id="progress-label">Connecting…</div>
-      <div class="progress-bar-bg">
-        <div class="progress-bar-fill" id="progress-fill"></div>
-      </div>
-    </div>
-    <div class="dispense-status" id="dispense-status">Processing Payment…</div>
-    <div class="dispense-sub" id="dispense-sub">Please wait while we connect</div>
-  </div>
+          <button class="btn" onclick="window.location.reload()">Open My Dashboard →</button>
 
-
-  <!-- SUCCESS -->
-  <div class="success-overlay" id="success-overlay">
-    <div class="success-card">
-      <div class="success-ring">✅</div>
-      <div class="success-title">Enjoy your drink!</div>
-      <div class="success-detail">
-        <div class="detail-row">
-          <span class="detail-label">Item</span>
-          <span class="detail-val" id="s-item">Coca Cola</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Amount</span>
-          <span class="detail-val green" id="s-price">45 ETB</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Method</span>
-          <span class="detail-val" id="s-method">Telebirr</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Status</span>
-          <span class="detail-val green">✓ Initiated</span>
+          <!-- Extra floating emojis -->
+          <div id="floating-emojis"
+            style="position:absolute; top:10%; left:0; right:0; pointer-events:none; height:100%;"></div>
         </div>
       </div>
-      <button class="success-close" onclick="closeSuccess()">Done · Collect your item</button>
+
+      <div class="progress-dots" id="dots" style="display:none;">
+        <div class="dot active" id="dot-1"></div>
+        <div class="dot" id="dot-2"></div>
+        <div class="dot" id="dot-3"></div>
+      </div>
     </div>
   </div>
-
 
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const item   = params.get('item')  || 'Coca Cola';
-    const price  = params.get('price') || '45';
-    const emoji  = params.get('emoji') || '🥤';
-    const desc   = params.get('desc')  || 'Cold & Refreshing · 500ml';
+    // Same data and logic as previous clean version
+    let selectedLearn = []
+    let selectedTeach = []
+    let excludedSkills = []
 
-    document.getElementById('item-name').textContent  = item;
-    document.getElementById('item-price').textContent = price;
-    document.getElementById('item-desc').textContent  = desc;
-    document.getElementById('item-emoji').textContent  = emoji;
-    document.getElementById('falling-item').textContent = emoji;
-    document.getElementById('vc1').textContent = emoji;
-    document.getElementById('vc2').textContent = emoji;
-    document.getElementById('vm-price').textContent = price + ' ETB';
+    const allSkills = [
+      { icon: "💻", name: "Python" },
+      { icon: "🎨", name: "Graphic Design" },
+      { icon: "📈", name: "Excel & Finances" },
+      { icon: "🎥", name: "Video Editing" },
+      { icon: "🗣️", name: "Public Speaking" },
+      { icon: "🎸", name: "Guitar" },
+      { icon: "🎾", name: "Tennis" },
+      { icon: "🧮", name: "Calculus Help" },
+      { icon: "📷", name: "Photography" },
+      { icon: "🍳", name: "Simple Cooking" },
+      { icon: "🧠", name: "AI Tools" },
+      { icon: "🇪🇸", name: "Spanish" },
+      { icon: "📝", name: "Resume Writing" }
+    ]
 
-    // Drop animation on load
-    setTimeout(() => {
-      document.getElementById('item-emoji').classList.add('drop');
-    }, 400);
-
-    let selectedMethod = null;
-    let selectedLabel  = null;
-
-    function selectMethod(el) {
-      document.querySelectorAll('.pay-btn').forEach(b => b.classList.remove('selected'));
-      el.classList.add('selected');
-      selectedMethod = el.dataset.method;
-      selectedLabel  = el.querySelector('.btn-name').textContent;
-
-      const cta = document.getElementById('pay-cta');
-      cta.disabled = false;
-      cta.textContent = 'Pay ' + price + ' ETB via ' + selectedLabel;
-
-      document.getElementById('blob-green').style.opacity = '1';
+    function renderLearnGrid() {
+      const container = document.getElementById('learn-skills')
+      container.innerHTML = ''
+      allSkills.forEach(skill => {
+        const full = `${skill.icon} ${skill.name}`
+        const pill = document.createElement('div')
+        pill.className = 'skill-pill'
+        pill.innerHTML = `${skill.icon} ${skill.name}`
+        pill.onclick = () => toggleSkill(pill, 'learn', full)
+        container.appendChild(pill)
+      })
     }
 
-    function handlePay() {
-      if (!selectedMethod) return;
-
-      const overlay = document.getElementById('dispense-overlay');
-      overlay.classList.add('show');
-      document.getElementById('progress-label').textContent = 'Connecting to ' + selectedLabel + '…';
-
-      // Kick off progress bar
-      setTimeout(() => {
-        document.getElementById('progress-fill').style.width = '100%';
-      }, 100);
-
-      // Step 1 — highlight cell, update text
-      setTimeout(() => {
-        document.getElementById('vc1').classList.add('active');
-        document.getElementById('dispense-status').textContent = 'Payment Authorized';
-        document.getElementById('dispense-sub').textContent = 'Dispensing your item…';
-        document.getElementById('progress-label').textContent = 'Dispensing…';
-      }, 1000);
-
-      // Step 2 — item falls
-      setTimeout(() => {
-        document.getElementById('falling-item').classList.add('fall');
-      }, 1500);
-
-      // Step 3 — show success
-      setTimeout(() => {
-        overlay.classList.remove('show');
-        document.getElementById('vc1').classList.remove('active');
-        document.getElementById('s-item').textContent   = item;
-        document.getElementById('s-price').textContent  = price + ' ETB';
-        document.getElementById('s-method').textContent = selectedLabel;
-        document.getElementById('success-overlay').classList.add('show');
-      }, 3200);
+    function renderTeachGrid() {
+      const container = document.getElementById('teach-skills')
+      container.innerHTML = ''
+      allSkills.forEach(skill => {
+        const full = `${skill.icon} ${skill.name}`
+        if (excludedSkills.includes(full)) return
+        const pill = document.createElement('div')
+        pill.className = 'skill-pill'
+        pill.innerHTML = `${skill.icon} ${skill.name}`
+        pill.onclick = () => toggleSkill(pill, 'teach', full)
+        container.appendChild(pill)
+      })
     }
 
-    function closeSuccess() {
-      document.getElementById('success-overlay').classList.remove('show');
-      const fi = document.getElementById('falling-item');
-      fi.classList.remove('fall');
-      document.getElementById('progress-fill').style.width = '0%';
+    function toggleSkill(pillElement, mode, fullSkill) {
+      const isActive = pillElement.classList.contains('active')
+      const opposite = mode === 'learn' ? selectedTeach : selectedLearn
+      if (!isActive && opposite.includes(fullSkill)) {
+        alert("You can't teach and learn the same skill!")
+        return
+      }
+      pillElement.classList.toggle('active')
+      if (isActive) {
+        if (mode === 'learn') selectedLearn = selectedLearn.filter(s => s !== fullSkill)
+        else selectedTeach = selectedTeach.filter(s => s !== fullSkill)
+      } else {
+        if (mode === 'learn') selectedLearn.push(fullSkill)
+        else selectedTeach.push(fullSkill)
+      }
+      updateSelectedSummary(mode)
     }
+
+    function updateSelectedSummary(mode) {
+      const list = mode === 'learn' ? selectedLearn : selectedTeach
+      const container = document.getElementById(mode + '-selected-summary')
+      const empty = document.getElementById(mode + '-empty')
+      container.innerHTML = ''
+      if (list.length === 0) { empty.style.display = 'block'; return; }
+      empty.style.display = 'none'
+      list.forEach(skill => {
+        const badge = document.createElement('div')
+        badge.className = 'selected-pill'
+        badge.innerHTML = `${skill}<span onclick="event.stopImmediatePropagation(); removeSkill('${skill}', '${mode}');" style="font-size:17px;line-height:1;">×</span>`
+        container.appendChild(badge)
+      })
+    }
+
+    function removeSkill(skill, mode) {
+      if (mode === 'learn') {
+        selectedLearn = selectedLearn.filter(s => s !== skill)
+        document.querySelectorAll('#learn-skills .skill-pill').forEach(p => { if (p.textContent.trim() === skill) p.classList.remove('active') })
+      } else {
+        selectedTeach = selectedTeach.filter(s => s !== skill)
+        document.querySelectorAll('#teach-skills .skill-pill').forEach(p => { if (p.textContent.trim() === skill) p.classList.remove('active') })
+      }
+      updateSelectedSummary(mode)
+    }
+
+    function showStep(step) {
+      document.querySelectorAll('.step-container').forEach(el => el.classList.remove('active'))
+      document.getElementById('step-' + step).classList.add('active')
+      const dots = document.getElementById('dots')
+      if (step >= 1 && step <= 3) {
+        dots.style.display = 'flex'
+        document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === step - 1))
+      } else dots.style.display = 'none'
+    }
+
+    function nextStep(step) {
+      if (step === 2) {
+        const name = document.getElementById('fullname').value.trim()
+        const dept = document.getElementById('department').value
+        const ig = document.getElementById('instagram').value.trim()
+        if (!name || !dept || !ig) {
+          alert("Please fill your name, department, and Instagram username")
+          return
+        }
+        const complete = document.getElementById('profile-complete')
+        complete.classList.remove('hidden')
+        complete.style.display = 'flex'
+      }
+      if (step === 3) {
+        excludedSkills = [...selectedLearn]
+        renderTeachGrid()
+      }
+      showStep(step)
+    }
+
+    function prevStep(step) {
+      if (step === 2) excludedSkills = []
+      showStep(step)
+    }
+
+    function finishForm() {
+      const data = {
+        full_name: document.getElementById('fullname').value,
+        department: document.getElementById('department').value,
+        instagram: document.getElementById('instagram').value,
+        learn_skills: selectedLearn,
+        teach_skills: selectedTeach
+      };
+
+      fetch('https://admin.mengede.app/api.php', {                    // ← Change path if needed
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+        .then(res => res.json())
+        .then(result => {
+          if (result.status === 'success') {
+            // Populate summary
+            document.getElementById('summary-name').textContent = data.full_name;
+            document.getElementById('summary-ig').textContent = data.instagram;
+            document.getElementById('summary-dept').textContent = data.department;
+
+            showStep('loading');
+            setTimeout(() => {
+              showStep('success');
+              launchConfettiAndEmojis();
+            }, 2200);
+          } else {
+            alert(result.message);
+          }
+        })
+        .catch(err => alert('Connection error. Is api.php in the same folder?'));
+    }
+
+    // CONFETTI + FLOATING EMOJIS
+    function launchConfettiAndEmojis() {
+      // Confetti using canvas (lightweight)
+      const canvas = document.createElement('canvas')
+      canvas.id = 'confetti-canvas'
+      canvas.style.position = 'absolute'
+      canvas.style.top = '0'
+      canvas.style.left = '0'
+      canvas.style.width = '100%'
+      canvas.style.height = '100%'
+      canvas.style.zIndex = '999'
+      canvas.style.pointerEvents = 'none'
+      document.getElementById('step-success').appendChild(canvas)
+
+      const ctx = canvas.getContext('2d')
+      canvas.width = 460
+      canvas.height = 620
+
+      const colors = ['#00d4ff', '#a855f7', '#10b981', '#f472b6']
+      const particles = []
+
+      class Particle {
+        constructor() {
+          this.x = Math.random() * canvas.width
+          this.y = Math.random() * canvas.height - canvas.height
+          this.size = Math.random() * 12 + 6
+          this.speed = Math.random() * 6 + 4
+          this.angle = Math.random() * 360
+          this.color = colors[Math.floor(Math.random() * colors.length)]
+          this.shape = Math.random() > 0.5 ? 'circle' : 'rect'
+        }
+        update() {
+          this.y += this.speed
+          this.angle += 4
+        }
+        draw() {
+          ctx.save()
+          ctx.translate(this.x, this.y)
+          ctx.rotate(this.angle * Math.PI / 180)
+          ctx.fillStyle = this.color
+          if (this.shape === 'circle') {
+            ctx.beginPath()
+            ctx.arc(0, 0, this.size / 2, 0, Math.PI * 2)
+            ctx.fill()
+          } else {
+            ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size)
+          }
+          ctx.restore()
+        }
+      }
+
+      for (let i = 0; i < 120; i++) particles.push(new Particle())
+
+      function animateConfetti() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        particles.forEach((p, i) => {
+          p.update()
+          p.draw()
+          if (p.y > canvas.height) particles.splice(i, 1)
+        })
+        if (particles.length > 0) requestAnimationFrame(animateConfetti)
+        else canvas.remove()
+      }
+      animateConfetti()
+
+      // Floating success emojis
+      const emojisContainer = document.getElementById('floating-emojis')
+      const emojis = ['🎉', '🚀', '💼', '📚', '🔥', '👏']
+      for (let i = 0; i < 18; i++) {
+        const e = document.createElement('div')
+        e.textContent = emojis[Math.floor(Math.random() * emojis.length)]
+        e.style.position = 'absolute'
+        e.style.left = Math.random() * 100 + '%'
+        e.style.fontSize = '22px'
+        e.style.animation = `floatUp ${2.5 + Math.random() * 2}s linear forwards`
+        e.style.opacity = '0'
+        emojisContainer.appendChild(e)
+        setTimeout(() => e.remove(), 5000)
+      }
+    }
+
+    // Create background particles
+    function createBackgroundParticles() {
+      const container = document.getElementById('particles')
+      for (let i = 0; i < 35; i++) {
+        const p = document.createElement('div')
+        p.className = 'particle'
+        p.style.left = Math.random() * 100 + '%'
+        p.style.animationDuration = (Math.random() * 6 + 6) + 's'
+        p.style.animationDelay = '-' + Math.random() * 12 + 's'
+        p.style.background = Math.random() > 0.5 ? '#00d4ff' : '#a855f7'
+        container.appendChild(p)
+      }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      renderLearnGrid()
+      createBackgroundParticles()
+
+      // Profile live check
+      const inputs = ['fullname', 'department', 'instagram']
+      inputs.forEach(id => {
+        const el = document.getElementById(id)
+        if (el) el.addEventListener('input', () => {
+          const name = document.getElementById('fullname').value.trim()
+          const dept = document.getElementById('department').value
+          const ig = document.getElementById('instagram').value.trim()
+          const complete = document.getElementById('profile-complete')
+          complete.style.display = (name && dept && ig) ? 'flex' : 'none'
+        })
+      })
+
+      console.log('%c✅ UniSkill – more background animations + epic congratulations screen ready!', 'color:#00d4ff;font-size:13px')
+    })
   </script>
 </body>
+
 </html>
